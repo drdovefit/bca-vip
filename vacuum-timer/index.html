@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Vacuum Timer · BCA</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="Breath and vacuum timer for The Vacuum, Done Right.">
+<meta name="theme-color" content="#d39e1c">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --gold:#d39e1c;--gold-deep:#b8860f;--ink:#15130f;--ink-2:#3b362d;--cream:#f5ecd9;--cream-2:#ebe0c7;--muted:#7a6a45;
+  --ok:#f5ecd9;
+  --head:"DIN Condensed","Barlow Condensed","Arial Narrow",sans-serif;
+  --serif:Georgia,"Times New Roman",serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--cream);color:var(--ink);font:17px/1.45 var(--body);-webkit-text-size-adjust:100%}
+.hero{background:var(--gold);padding:calc(18px + env(safe-area-inset-top,0px)) 16px 22px;text-align:center}
+.brand{font-family:var(--serif);font-size:15px;color:var(--ink);margin:0 0 6px}
+h1{font-family:var(--head);font-weight:700;font-size:52px;line-height:.9;margin:0;text-transform:uppercase;letter-spacing:.01em;color:var(--ink)}
+h1 span{color:var(--cream)}
+.tag{font-family:var(--serif);font-style:italic;color:var(--ink);margin:8px 0 0;font-size:16px}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px calc(28px + env(safe-area-inset-bottom,0px))}
+.card{border-radius:18px;padding:18px 16px;margin:0 0 14px}
+.timer{background:var(--ink);color:var(--cream);margin-top:-6px}
+.settings{background:#fffaf0;border:1px solid var(--cream-2)}
+.ring{width:min(240px,62vw);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;margin:4px auto 12px}
+.orb{position:absolute;inset:0;border-radius:50%;background:rgba(211,158,28,.18);border:3px solid var(--gold);transform:scale(.72);transition:transform 1s ease-in-out,background .3s,border-color .3s}
+.ring.in .orb{transform:scale(1)}
+.ring.out .orb{transform:scale(.72)}
+.ring.hold .orb{background:var(--gold);border-color:var(--gold);transform:scale(.72)}
+.ring.hold .val{color:var(--ink)}
+.ring.pause .orb{transform:scale(.72);border-color:var(--gold)}
+.ring.rest .orb{background:transparent;border-color:#4a4335}
+.val{position:relative;font-family:var(--head);font-size:76px;font-weight:700;line-height:1;color:var(--cream)}
+.state{font-family:var(--head);font-size:32px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.03em;min-height:38px;color:var(--gold)}
+.hint{text-align:center;font-family:var(--serif);color:var(--cream);opacity:.9;min-height:3em;margin:4px auto 12px;max-width:30ch}
+.progress{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin:0 0 16px;color:#cdbf9f;font-weight:600;font-size:15px}
+.dots{display:flex;gap:7px;justify-content:center;margin:0 0 10px}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid #6b604a}
+.dots i.on{background:var(--gold);border-color:var(--gold)}
+.row{display:flex;gap:10px}
+.btn{flex:1;min-height:58px;border-radius:14px;border:0;font:700 22px var(--head);text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
+.btn.primary{background:var(--gold);color:var(--ink)}
+.btn.ghost{background:transparent;color:var(--cream);border:1.5px solid #6b604a}
+h2{font-family:var(--head);font-size:26px;text-transform:uppercase;margin:0 0 12px;letter-spacing:.02em}
+.presets{display:grid;grid-template-columns:1fr;gap:8px;margin:0 0 12px}
+.presets button{min-height:62px;border-radius:12px;border:1.5px solid var(--cream-2);background:var(--cream);color:var(--ink);font:500 15px var(--serif);cursor:pointer;line-height:1.25;padding:8px 6px}
+.presets button b{display:block;font:700 20px var(--head);text-transform:uppercase;letter-spacing:.03em}
+.presets button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--cream)}
+.presets button[aria-pressed="true"] b{color:var(--gold)}
+.set{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--cream-2)}
+.set:first-of-type{border-top:0}
+.set label{font-weight:600}
+.set small{display:block;color:var(--muted);font-weight:400;font-size:14px;font-family:var(--serif);font-style:italic}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:44px;height:44px;border-radius:12px;border:0;background:var(--ink);color:var(--gold);font:700 24px var(--body);cursor:pointer}
+.step button:disabled{opacity:.35}
+.step output{min-width:56px;text-align:center;font-family:var(--head);font-size:26px;font-weight:700}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 0 0;border-top:1px solid var(--cream-2);margin-top:4px;font-weight:600}
+.toggle input{width:24px;height:24px;accent-color:var(--gold-deep)}
+.note{font-family:var(--serif);font-style:italic;color:var(--ink-2);font-size:15px;margin:12px 0 0;text-align:center}
+.total{text-align:center;color:var(--muted);font-size:15px;margin:10px 0 0;font-weight:600}
+@media (prefers-reduced-motion:reduce){.orb{transition:none}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <p class="brand">The Bodybuilder&rsquo;s Core Academy</p>
+  <h1>Vacuum <span>Timer</span></h1>
+  <p class="tag">The Vacuum, Done Right</p>
+</header>
+<div class="wrap">
+  <section class="card timer" aria-live="polite">
+    <div class="ring rest" id="ring"><div class="orb"></div><div class="val" id="val">0</div></div>
+    <div class="state" id="state">Ready</div>
+    <p class="hint" id="hint">Pick your setting below, then press Start. Film yourself side on.</p>
+    <div class="dots" id="dots" aria-label="Vacuums this set"></div>
+    <div class="progress"><span id="pSet">Set 1 of 2</span><span id="pVac">Vacuum 0 of 3</span></div>
+    <div class="row">
+      <button class="btn primary" id="go" type="button">Start</button>
+      <button class="btn ghost" id="stop" type="button">Reset</button>
+    </div>
+  </section>
+
+  <section class="card settings">
+    <h2>Your setting</h2>
+    <div class="presets" id="presets">
+      <button type="button" data-p="string"><b>Advanced</b>2 in / 4 out, 10 s holds, 3 sets</button>
+    </div>
+    <div id="settings"></div>
+    <div class="toggle"><label for="sound">Sounds</label><input type="checkbox" id="sound" checked></div>
+    <div class="toggle"><label for="music">Music</label><input type="checkbox" id="music" checked></div>
+    <div class="toggle"><label for="voice">Dove&rsquo;s voice</label><input type="checkbox" id="voice" checked></div>
+    <p class="total" id="total"></p>
+    <p class="note">Dizzy or gasping? Make the hold shorter. Five good seconds beats fifteen bad ones.</p>
+  </section>
+</div>
+
+<script>
+(function(){
+var $=function(s){return document.getElementById(s)};
+var FIELDS=[
+  ["inS","Breathe in","seconds",1,10,1],
+  ["outS","Breathe out","seconds",2,12,1],
+  ["first","Breaths before the first vacuum","",1,6,1],
+  ["between","Breaths between vacuums","",1,6,1],
+  ["hold","Vacuum hold","seconds",3,30,1],
+  ["vacs","Vacuums per set","",1,8,1],
+  ["sets","Sets","",1,6,1],
+  ["rest","Rest between sets","seconds",0,180,15]
+];
+var PRESETS={
+  learn:{inS:4,outS:6,first:3,between:3,hold:8,vacs:3,sets:2,rest:60},
+  string:{inS:2,outS:4,first:3,between:2,hold:10,vacs:3,sets:3,rest:45}
+};
+var KEY="bca-vacuum-timer";
+var cfg=load()||Object.assign({preset:""},PRESETS.learn);if(cfg.preset==="learn")cfg.preset="";
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}}
+
+/* settings UI */
+var box=$("settings");
+FIELDS.forEach(function(f){
+  var d=document.createElement("div");d.className="set";
+  d.innerHTML='<label>'+f[1]+(f[2]?'<small>'+f[2]+'</small>':'')+'</label><div class="step"><button type="button" aria-label="Less">−</button><output id="o_'+f[0]+'"></output><button type="button" aria-label="More">+</button></div>';
+  var b=d.querySelectorAll("button");
+  b[0].onclick=function(){bump(f,-1)};b[1].onclick=function(){bump(f,1)};
+  box.appendChild(d);
+});
+function bump(f,dir){cfg[f[0]]=Math.max(f[3],Math.min(f[4],cfg[f[0]]+dir*f[5]));cfg.preset="";save();paint()}
+document.querySelectorAll("[data-p]").forEach(function(b){b.onclick=function(){if(running)return;var on=cfg.preset===b.dataset.p;var k=on?"learn":b.dataset.p;Object.assign(cfg,PRESETS[k]);cfg.preset=on?"":b.dataset.p;save();paint()}});
+$("sound").checked=cfg.sound!==false;$("voice").checked=cfg.voice!==false;
+$("sound").onchange=function(){cfg.sound=this.checked;save()};
+$("music").checked=cfg.music!==false;
+$("music").onchange=function(){cfg.music=this.checked;save();if(running&&!paused){this.checked?musicStart():musicStop()}};
+$("voice").onchange=function(){cfg.voice=this.checked;save()};
+function paint(){
+  FIELDS.forEach(function(f){$("o_"+f[0]).textContent=cfg[f[0]]});
+  document.querySelectorAll("[data-p]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.p===cfg.preset)});
+  var br=cfg.inS+cfg.outS,perSet=cfg.first*br+(cfg.vacs-1)*cfg.between*br+cfg.vacs*(cfg.hold+2)+cfg.inS;
+  var t=perSet*cfg.sets+cfg.rest*(cfg.sets-1);
+  $("total").textContent="About "+Math.max(1,Math.round(t/60))+" min";
+  if(!running){$("pSet").textContent="Set 1 of "+cfg.sets;$("pVac").textContent="Vacuum 0 of "+cfg.vacs;dots(0)}
+}
+function dots(n){var h="";for(var i=0;i<cfg.vacs;i++)h+='<i class="'+(i<n?"on":"")+'"></i>';$("dots").innerHTML=h}
+
+/* sound: soft bells, same as the BCA program pages */
+var ac=null;
+function ctx(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();return ac}catch(e){return null}}
+function bell(f,at,len,vol){var c=ctx();if(!c)return;var t=c.currentTime+(at||0),L=len||1.6,V=vol||.22;
+  [[1,1],[2.01,.35],[3.02,.12],[4.1,.05]].forEach(function(pt){var o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=f*pt[0];
+    o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(V*pt[1],t+.015);
+    g.gain.exponentialRampToValueAtTime(.0001,t+L/(pt[0]>1?pt[0]*.8:1));o.start(t);o.stop(t+L+.1)})}
+var SOUND={inhale:function(){bell(659,0,1.4)},exhale:function(){bell(330,0,2.2,.26)},
+  hold:function(){bell(523,0,1.3);bell(523,.28,1.6)},
+  rest:function(){bell(523,0,1.2);bell(659,.25,1.2);bell(784,.5,1.8)},
+  done:function(){bell(523,0,2.5);bell(659,.05,2.5);bell(784,.1,2.8)}};
+/* Dove's real voice, cut from her LPF Foundations class (Oct 12, 2026) */
+var CLIPS={inhale:"a/dove-inhale.mp3",exhale:"a/dove-exhale.mp3",hold1:"a/dove-vacuum-1.mp3",hold2:"a/dove-vacuum-2.mp3",hold3:"a/dove-vacuum-3.mp3"};
+var PAUSE=2;
+var HOLDHINT=["Stop. Swallow. Open ribs.","Soft belly. Rib cage open.","Stop. Hold your breath. Open your ribcage 360."];
+var AUD={};Object.keys(CLIPS).forEach(function(k){var a=new Audio(CLIPS[k]);a.preload="auto";AUD[k]=a});
+function unlock(){Object.keys(AUD).forEach(function(k){var a=AUD[k];a.muted=true;var p=a.play();if(p&&p.then)p.then(function(){a.pause();a.currentTime=0;a.muted=false}).catch(function(){a.muted=false});else{a.pause();a.muted=false}})}
+function cue(kind,clip){
+  if(clip==="quiet"&&cfg.voice!==false)return;
+  var useVoice=cfg.voice!==false&&clip&&AUD[clip];
+  if(useVoice){try{var a=AUD[clip];a.currentTime=0;a.play().catch(function(){})}catch(e){}}
+  else if(cfg.sound!==false&&SOUND[kind])SOUND[kind]();
+}
+/* background music (same track as the athlete pages), soft so the voice sits on top */
+var track=null,fadeT=null;
+function musicStart(){if(cfg.music===false)return;try{track=track||new Audio("music.mp3");track.loop=true;clearInterval(fadeT);track.volume=0;
+  var p=track.play();if(p&&p.catch)p.catch(function(){});fadeT=setInterval(function(){track.volume=Math.min(.25,track.volume+.025);if(track.volume>=.25)clearInterval(fadeT)},120)}catch(e){}}
+function musicStop(){if(!track)return;clearInterval(fadeT);fadeT=setInterval(function(){track.volume=Math.max(0,track.volume-.025);if(track.volume<=0){clearInterval(fadeT);track.pause()}},100)}
+
+/* the session as a list of steps */
+function plan(){
+  var s=[];
+  for(var set=1;set<=cfg.sets;set++){
+    for(var v=1;v<=cfg.vacs;v++){
+      var n=v===1?cfg.first:cfg.between;
+      for(var b=1;b<=n;b++){
+        var last=b===n;
+        s.push({k:"in",t:cfg.inS,label:(v>1&&b===1)?"Inhale gently":"Breathe in",hint:(v>1&&b===1)?"Small sip into your back ribs. No gasp.":"Into your back ribs.",set:set,v:v-1,say:"inhale"});
+        s.push({k:"out",t:cfg.outS,label:last?"All the air out":"Breathe out",hint:last?"Exhale, let it go. All the air comes out.":"Exhale, let the ribs fall.",set:set,v:v-1,say:"exhale"});
+      }
+      var n=((set-1)*cfg.vacs+v-1)%3;s.push({k:"pause",t:PAUSE,label:"Stop",hint:"Stop at the bottom. Swallow.",set:set,v:v-1,say:"hold"+(n+1)});s.push({k:"hold",t:cfg.hold,label:"Vacuum",hint:HOLDHINT[n],set:set,v:v,say:"quiet"});
+    }
+    s.push({k:"in",t:cfg.inS,label:"Inhale gently",hint:"Let it go. Ribs back down.",set:set,v:cfg.vacs,say:"inhale"});
+    if(set<cfg.sets&&cfg.rest>0)s.push({k:"rest",t:cfg.rest,label:"Rest",hint:"Breathe easy. Next set coming up.",set:set,v:cfg.vacs,say:""});
+  }
+  return s;
+}
+
+/* runner */
+var running=false,paused=false,steps=[],i=0,left=0,tick=null,lock=null;
+function show(st){
+  var r=$("ring");r.className="ring "+st.k;
+  var orb=r.querySelector(".orb");orb.style.transitionDuration=(st.k==="in"||st.k==="out"?st.t:.3)+"s";
+  $("state").textContent=st.label;$("hint").textContent=st.hint;
+  $("pSet").textContent="Set "+st.set+" of "+cfg.sets;$("pVac").textContent="Vacuum "+Math.min(st.v,cfg.vacs)+" of "+cfg.vacs;
+  dots(st.v);
+}
+function enter(){
+  if(i>=steps.length){finish();return}
+  var st=steps[i];left=st.t;show(st);$("val").textContent=left;
+  cue(st.k==="in"?"inhale":st.k==="out"?"exhale":st.k==="pause"?"hold":st.k,st.say);
+}
+function step(){
+  if(paused)return;
+  left--;
+  if(left<=0){i++;enter();return}
+  $("val").textContent=left;
+}
+function start(){
+  ctx();if(!running)unlock();
+  if(running){paused=!paused;$("go").textContent=paused?"Keep going":"Pause";paused?musicStop():musicStart();return}
+  steps=plan();i=0;running=true;paused=false;$("go").textContent="Pause";
+  document.querySelectorAll("[data-p], .step button").forEach(function(b){b.disabled=true});
+  wake();musicStart();enter();tick=setInterval(step,1000);
+}
+function reset(){
+  clearInterval(tick);musicStop();running=false;paused=false;$("go").textContent="Start";
+  document.querySelectorAll("[data-p], .step button").forEach(function(b){b.disabled=false});
+  var r=$("ring");r.className="ring rest";$("val").textContent="0";$("state").textContent="Ready";
+  $("hint").textContent="Pick your setting below, then press Start. Film yourself side on.";
+  release();paint();
+}
+function finish(){
+  clearInterval(tick);musicStop();cue("done","");
+  running=false;$("go").textContent="Start again";
+  document.querySelectorAll("[data-p], .step button").forEach(function(b){b.disabled=false});
+  $("ring").className="ring rest";$("val").textContent="✓";$("state").textContent="Done";
+  $("hint").textContent="Great work. Post your video in the community.";release();
+}
+function wake(){try{if(navigator.wakeLock)navigator.wakeLock.request("screen").then(function(l){lock=l}).catch(function(){})}catch(e){}}
+function release(){try{lock&&lock.release();lock=null}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(running&&!paused&&document.visibilityState==="visible")wake()});
+$("go").onclick=start;$("stop").onclick=reset;
+paint();
+})();
+</script>
+</body>
+</html>
