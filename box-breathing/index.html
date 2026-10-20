@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Box Breathing · BCA</title>
+<style>
+  :root { --gold: rgb(211,158,28); --cream: rgb(239,231,214); --ink: rgb(20,18,15); --dim: rgba(239,231,214,.25); }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: var(--ink); color: var(--cream); font-family: "DIN Condensed", "Oswald", "Arial Narrow", sans-serif; overflow: hidden; }
+  .wrap { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3vh; padding: 16px; }
+  .brand { font-family: Georgia, serif; font-size: clamp(14px, 2vh, 20px); letter-spacing: .04em; opacity: .8; }
+  .stage { position: relative; width: min(70vh, 86vw); aspect-ratio: 1; }
+  svg { width: 100%; height: 100%; overflow: visible; }
+  .side { stroke: var(--dim); stroke-width: 6; fill: none; stroke-linecap: round; }
+  .side.on { stroke: var(--gold); }
+  .lab { fill: var(--cream); opacity: .45; font-size: 34px; letter-spacing: .08em; text-anchor: middle; dominant-baseline: middle; }
+  .lab.on { fill: var(--gold); opacity: 1; }
+  .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
+  .phase { font-size: clamp(40px, 9vh, 96px); letter-spacing: .06em; color: var(--gold); line-height: 1; }
+  .cue { font-family: Georgia, serif; font-size: clamp(16px, 2.6vh, 26px); margin-top: 1.2vh; opacity: .9; }
+  .count { font-size: clamp(60px, 14vh, 150px); line-height: 1; margin-top: 1vh; }
+  .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; justify-content: center; font-family: Georgia, serif; font-size: 16px; transition: opacity .4s; }
+  .running .controls { opacity: 0; pointer-events: none; }
+  .running.showctl .controls { opacity: 1; pointer-events: auto; }
+  button, select { font: inherit; background: transparent; color: var(--cream); border: 1px solid var(--dim); border-radius: 999px; padding: 8px 18px; cursor: pointer; }
+  button.go { background: var(--gold); color: var(--ink); border-color: var(--gold); font-weight: bold; }
+  .rounds { font-family: Georgia, serif; opacity: .7; font-size: 16px; min-height: 1.2em; }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <div class="brand">The Bodybuilder's Core Academy</div>
+  <div class="stage">
+    <svg viewBox="-60 -60 520 520" aria-label="Box breathing guide">
+      <line class="side" id="s0" x1="0" y1="400" x2="0" y2="0"/>
+      <line class="side" id="s1" x1="0" y1="0" x2="400" y2="0"/>
+      <line class="side" id="s2" x1="400" y1="0" x2="400" y2="400"/>
+      <line class="side" id="s3" x1="400" y1="400" x2="0" y2="400"/>
+      <text class="lab" id="l0" x="-34" y="200" transform="rotate(-90 -34 200)">INHALE</text>
+      <text class="lab" id="l1" x="200" y="-30">HOLD</text>
+      <text class="lab" id="l2" x="434" y="200" transform="rotate(90 434 200)">EXHALE</text>
+      <text class="lab" id="l3" x="200" y="434">HOLD</text>
+      <circle id="dot" cx="0" cy="400" r="16" fill="rgb(211,158,28)"/>
+    </svg>
+    <div class="center">
+      <div class="phase" id="phase">READY</div>
+      <div class="cue" id="cue">Hands on your ribs</div>
+      <div class="count" id="count"></div>
+    </div>
+  </div>
+  <div class="rounds" id="rounds"></div>
+  <div class="controls">
+    <label>Seconds per side
+      <select id="secs"><option>3</option><option selected>4</option><option>5</option><option>6</option></select>
+    </label>
+    <label>Rounds
+      <select id="nrounds"><option>4</option><option selected>6</option><option>8</option><option>10</option></select>
+    </label>
+    <button class="go" id="go">Start</button>
+    <button id="reset">Reset</button>
+  </div>
+</div>
+<script>
+const P = [
+  { name: "INHALE", cue: "Open the ribs" },
+  { name: "HOLD",   cue: "Ribs open" },
+  { name: "EXHALE", cue: "Let the ribs recoil" },
+  { name: "HOLD",   cue: "Rest at the bottom" },
+];
+const corners = [[0,400],[0,0],[400,0],[400,400],[0,400]];
+const $ = id => document.getElementById(id);
+let running = false, t0 = 0, paused = 0, raf = 0;
+
+function draw(elapsed) {
+  const side = +$("secs").value, total = +$("nrounds").value;
+  const roundLen = side * 4;
+  const round = Math.floor(elapsed / roundLen);
+  if (round >= total) return finish();
+  const inRound = elapsed - round * roundLen;
+  const i = Math.min(3, Math.floor(inRound / side));
+  const f = (inRound - i * side) / side;
+  const [x1,y1] = corners[i], [x2,y2] = corners[i+1];
+  $("dot").setAttribute("cx", x1 + (x2-x1)*f);
+  $("dot").setAttribute("cy", y1 + (y2-y1)*f);
+  for (let k = 0; k < 4; k++) {
+    $("s"+k).classList.toggle("on", k === i);
+    $("l"+k).classList.toggle("on", k === i);
+  }
+  $("phase").textContent = P[i].name;
+  $("cue").textContent = P[i].cue;
+  $("count").textContent = Math.ceil(side - (inRound - i*side));
+  $("rounds").textContent = "Round " + (round+1) + " of " + total;
+}
+function tick(now) {
+  if (!running) return;
+  draw((now - t0) / 1000);
+  raf = requestAnimationFrame(tick);
+}
+function start() {
+  running = true;
+  t0 = performance.now() - paused * 1000;
+  $("wrap").classList.add("running");
+  $("go").textContent = "Pause";
+  raf = requestAnimationFrame(tick);
+}
+function pause() {
+  running = false;
+  paused = (performance.now() - t0) / 1000;
+  cancelAnimationFrame(raf);
+  $("wrap").classList.remove("running");
+  $("go").textContent = "Start";
+}
+function reset() {
+  running = false; paused = 0; cancelAnimationFrame(raf);
+  $("wrap").classList.remove("running");
+  $("go").textContent = "Start";
+  $("dot").setAttribute("cx", 0); $("dot").setAttribute("cy", 400);
+  for (let k = 0; k < 4; k++) { $("s"+k).classList.remove("on"); $("l"+k).classList.remove("on"); }
+  $("phase").textContent = "READY"; $("cue").textContent = "Hands on your ribs";
+  $("count").textContent = ""; $("rounds").textContent = "";
+}
+function finish() {
+  running = false; paused = 0;
+  $("wrap").classList.remove("running");
+  $("go").textContent = "Start";
+  $("phase").textContent = "DONE"; $("cue").textContent = "Nice work"; $("count").textContent = "";
+  for (let k = 0; k < 4; k++) { $("s"+k).classList.remove("on"); $("l"+k).classList.remove("on"); }
+}
+$("go").onclick = () => running ? pause() : start();
+$("reset").onclick = reset;
+document.addEventListener("keydown", e => { if (e.code === "Space") { e.preventDefault(); running ? pause() : start(); } });
+document.addEventListener("mousemove", () => {
+  $("wrap").classList.add("showctl");
+  clearTimeout(window._h); window._h = setTimeout(() => $("wrap").classList.remove("showctl"), 1500);
+});
+</script>
+</body>
+</html>
