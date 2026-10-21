@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Breathing Timer · BCA</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#e2588e">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --gold:#e2588e;--gold-deep:#c23f74;--ink:#8a2450;--ink-2:#6a3a50;--cream:#fdeef3;--cream-2:#f9d3e1;--muted:#a0667f;
+  --ok:#f5ecd9;
+  --head:"DIN Condensed","Barlow Condensed","Arial Narrow",sans-serif;
+  --serif:Georgia,"Times New Roman",serif;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--cream);color:var(--ink);font:17px/1.45 var(--body);-webkit-text-size-adjust:100%}
+.hero{background:linear-gradient(160deg,#f7a9c6,var(--gold));padding:calc(18px + env(safe-area-inset-top,0px)) 16px 22px;text-align:center}
+.brand{font-family:var(--serif);font-size:15px;color:#fff;margin:0 0 6px}
+h1{font-family:var(--head);font-weight:700;font-size:52px;line-height:.9;margin:0;text-transform:uppercase;letter-spacing:.01em;color:var(--ink)}
+h1 span{color:#fff}
+.tag{font-family:var(--serif);font-style:italic;color:var(--ink);margin:8px 0 0;font-size:16px}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px calc(28px + env(safe-area-inset-bottom,0px))}
+.card{border-radius:18px;padding:18px 16px;margin:0 0 14px}
+.timer{background:#fff;color:var(--ink);margin-top:-6px;border:1.5px solid var(--cream-2);box-shadow:0 3px 0 var(--cream-2)}
+.settings{background:#fff;border:1px solid var(--cream-2)}
+.ring{width:min(240px,62vw);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;margin:4px auto 12px}
+.orb{position:absolute;inset:0;border-radius:50%;background:rgba(226,88,142,.15);border:3px solid var(--gold);transform:scale(.72);transition:transform 1s ease-in-out,background .3s,border-color .3s}
+.ring.in .orb{transform:scale(1)}
+.ring.out .orb{transform:scale(.72)}
+.ring.hold .orb{background:var(--gold);border-color:var(--gold);transform:scale(.72)}
+.ring.hold .val{color:#fff}
+.ring.pause .orb{transform:scale(.72);border-color:var(--gold)}
+.ring.rest .orb{background:transparent;border-color:var(--cream-2)}
+.val{position:relative;font-family:var(--head);font-size:76px;font-weight:700;line-height:1;color:var(--ink)}
+.state{font-family:var(--head);font-size:32px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:.03em;min-height:38px;color:var(--gold)}
+.hint{text-align:center;font-family:var(--serif);font-style:italic;color:var(--ink);opacity:.9;min-height:3em;margin:4px auto 12px;max-width:30ch}
+.progress{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin:0 0 16px;color:var(--muted);font-weight:600;font-size:15px}
+.dots{display:flex;gap:7px;justify-content:center;margin:0 0 10px}
+.dots i{width:14px;height:14px;border-radius:50%;border:2px solid var(--cream-2)}
+.dots i.on{background:var(--gold);border-color:var(--gold)}
+.row{display:flex;gap:10px}
+.btn{flex:1;min-height:58px;border-radius:30px;border:0;font:700 22px var(--head);text-transform:uppercase;letter-spacing:.04em;cursor:pointer}
+.btn.primary{background:var(--gold);color:#fff}
+.btn.ghost{background:var(--cream-2);color:var(--ink);border:0}
+h2{font-family:var(--head);font-size:26px;text-transform:uppercase;margin:0 0 12px;letter-spacing:.02em}
+.presets{display:grid;grid-template-columns:1fr;gap:8px;margin:0 0 12px}
+.presets button{min-height:62px;border-radius:12px;border:1.5px solid var(--cream-2);background:var(--cream);color:var(--ink);font:500 15px var(--serif);cursor:pointer;line-height:1.25;padding:8px 6px}
+.presets button b{display:block;font:700 20px var(--head);text-transform:uppercase;letter-spacing:.03em}
+.presets button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--cream)}
+.presets button[aria-pressed="true"] b{color:var(--gold)}
+.set{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--cream-2)}
+.set:first-of-type{border-top:0}
+.set label{font-weight:600}
+.set small{display:block;color:var(--muted);font-weight:400;font-size:14px;font-family:var(--serif);font-style:italic}
+.step{display:flex;align-items:center;gap:6px}
+.step button{width:44px;height:44px;border-radius:50%;border:0;background:var(--gold);color:#fff;font:700 24px var(--body);cursor:pointer}
+.step button:disabled{opacity:.35}
+.step output{min-width:56px;text-align:center;font-family:var(--head);font-size:26px;font-weight:700}
+.toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 0 0;border-top:1px solid var(--cream-2);margin-top:4px;font-weight:600}
+.toggle input{width:24px;height:24px;accent-color:var(--gold-deep)}
+.note{font-family:var(--serif);font-style:italic;color:var(--ink-2);font-size:15px;margin:12px 0 0;text-align:center}
+.total{text-align:center;color:var(--muted);font-size:15px;margin:10px 0 0;font-weight:600}
+@media (prefers-reduced-motion:reduce){.orb{transition:none}}
+.presets.mins{grid-template-columns:repeat(3,1fr)}
+.presets.mins button{font:700 22px var(--head);text-transform:uppercase}
+.ring.in .orb{transform:scale(1)}
+</style>
+</head>
+<body>
+<header class="hero">
+  <p class="brand">The Bodybuilder&rsquo;s Core Academy</p>
+  <h1>Breathing <span>Timer</span></h1>
+</header>
+<div class="wrap">
+  <section class="card timer" aria-live="polite">
+    <div class="ring rest" id="ring"><div class="orb" id="bubble"></div><div class="val" id="count">4</div></div>
+    <div class="state" id="state">Ready</div>
+    <p class="hint" id="hint">Press start, close your eyes and follow the bell.</p>
+    <div class="progress"><span id="left">5:00</span></div>
+    <div class="row">
+      <button class="btn primary" id="go" type="button">Start</button>
+      <button class="btn ghost" id="stop" type="button">Reset</button>
+    </div>
+  </section>
+
+  <section class="card settings">
+    <h2>Your setting</h2>
+    <div class="presets mins" id="presets">
+      <button type="button" data-min="5">5 min</button>
+      <button type="button" data-min="7">7 min</button>
+      <button type="button" data-min="10">10 min</button>
+    </div>
+    <div class="set"><label>Breathe in<small>seconds</small></label>
+      <div class="step"><button type="button" data-k="inh" data-d="-1">−</button><output id="inh">4</output><button type="button" data-k="inh" data-d="1">+</button></div></div>
+    <div class="set"><label>Breathe out<small>seconds</small></label>
+      <div class="step"><button type="button" data-k="exh" data-d="-1">−</button><output id="exh">8</output><button type="button" data-k="exh" data-d="1">+</button></div></div>
+    <div class="toggle"><label for="voice">Bell</label><input type="checkbox" id="voice" checked></div>
+    <div class="toggle"><label for="music">Music</label><input type="checkbox" id="music" checked></div>
+    <p class="note">Keep your phone unlocked. The screen stays on while the timer runs.</p>
+  </section>
+</div>
+
+<audio id="bgm" src="/vacuum-timer/music.mp3" loop preload="auto"></audio>
+
+<script>
+const $=id=>document.getElementById(id);
+const KEY="bca-breathe";
+let cfg={min:5,inh:4,exh:8,music:true,voice:true};
+try{Object.assign(cfg,JSON.parse(localStorage.getItem(KEY)||"{}"))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}};
+
+const CUES={inh:["Inhale through your nose","Ribs open to the sides","Breathe down into your pelvic floor"],
+            exh:["Exhale from the bottom up","Petals close, ribs fall","No bracing, let it go"]};
+let running=false,timer=null,lock=null,endAt=0,phase="inh",phaseLeft=0,cycle=0,ac=null;
+
+function fmt(s){s=Math.max(0,Math.ceil(s));return Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
+function paint(){
+  $("inh").textContent=cfg.inh;$("exh").textContent=cfg.exh;
+  $("music").checked=cfg.music;$("voice").checked=cfg.voice;
+  document.querySelectorAll("#presets button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.min===cfg.min));
+  if(!running){$("left").textContent=fmt(cfg.min*60);$("count").textContent=cfg.inh}
+}
+function chime(){
+  try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const t=ac.currentTime;
+    tri(ac,1760,t,3,.16);tri(ac,2350,t+.3,3,.16);tri(ac,2790,t+.6,3.5,.16)}catch(e){}
+}
+function tri(c,f,t,L,V){
+  [[1,1],[1.003,.6],[2.76,.35],[5.4,.18],[8.93,.08]].forEach(function(pt){var o=c.createOscillator(),g=c.createGain();o.type="sine";o.frequency.value=f*pt[0];
+    o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(V*pt[1],t+.004);
+    g.gain.exponentialRampToValueAtTime(.0001,t+L/(pt[0]>1.01?Math.sqrt(pt[0]):1));o.start(t);o.stop(t+L+.1)})}
+function bell(high){
+  if(!cfg.voice)return;
+  try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();
+    tri(ac,high?2350:1760,ac.currentTime,2.6,.16)}catch(e){}
+}
+function startPhase(p){
+  phase=p;phaseLeft=p==="inh"?cfg.inh:cfg.exh;
+  if(p==="inh")cycle++;
+  $("bubble").style.transitionDuration=phaseLeft+"s";$("ring").className="ring "+(p==="inh"?"in":"out");
+  $("state").textContent=p==="inh"?"Inhale":"Exhale";
+  $("hint").textContent=CUES[p][(cycle-1)%3];
+  $("count").textContent=phaseLeft;
+  bell(p==="inh");
+}
+function tick(){
+  const left=(endAt-Date.now())/1000;
+  $("left").textContent=fmt(left);
+  phaseLeft--;
+  if(phaseLeft<=0){
+    if(phase==="exh"&&left<=0.5){finish();return}
+    startPhase(phase==="inh"?"exh":"inh");
+  }else $("count").textContent=phaseLeft;
+}
+async function start(){
+  if(running)return;running=true;
+  endAt=Date.now()+cfg.min*60*1000;cycle=0;
+  if(cfg.music){const m=$("bgm");m.volume=0.45;try{await m.play()}catch(e){}}
+  try{lock=await navigator.wakeLock?.request("screen")}catch(e){}
+  $("go").textContent="Breathing";$("go").disabled=true;
+  startPhase("inh");
+  timer=setInterval(tick,1000);
+}
+function stop(done){
+  running=false;clearInterval(timer);timer=null;
+  const m=$("bgm");m.pause();m.currentTime=0;
+  try{lock&&lock.release()}catch(e){}lock=null;
+  $("bubble").style.transitionDuration="1s";$("ring").className="ring rest";
+  $("go").textContent="Start";$("go").disabled=false;
+  $("state").textContent=done?"Done":"Ready";
+  $("hint").textContent=done?"Great work.":"Press start, close your eyes and follow the bell.";
+  $("left").textContent=fmt(cfg.min*60);$("count").textContent=cfg.inh;
+}
+function finish(){chime();stop(true)}
+
+$("go").onclick=start;
+$("stop").onclick=()=>stop(false);
+document.querySelectorAll("#presets button").forEach(b=>b.onclick=()=>{cfg.min=+b.dataset.min;save();paint()});
+document.querySelectorAll(".step button").forEach(b=>b.onclick=()=>{const k=b.dataset.k;cfg[k]=Math.min(12,Math.max(2,cfg[k]+ +b.dataset.d));save();paint()});
+$("music").onchange=e=>{cfg.music=e.target.checked;save();if(running){const m=$("bgm");cfg.music?m.play():m.pause()}};
+$("voice").onchange=e=>{cfg.voice=e.target.checked;save()};
+document.addEventListener("visibilitychange",async()=>{if(running&&document.visibilityState==="visible"&&!lock){try{lock=await navigator.wakeLock?.request("screen")}catch(e){}}});
+paint();
+</script>
+</body>
+</html>
