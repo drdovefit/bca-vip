@@ -1,4 +1,4 @@
-const C='bca-alicia-v1';
+const C='bca-alicia-v2';
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(['./','/assets/favicon.svg','/assets/apple-touch-icon.png','/assets/icon-192.png','/assets/icon-512.png']).catch(()=>{})))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('bca-alicia-')&&k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);
