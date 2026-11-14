@@ -1,4 +1,4 @@
-const C='bca-tarah-v1794622391';
+const C='bca-tarah-v1794622668';
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(['./','/assets/favicon.svg','/assets/apple-touch-icon.png','/assets/icon-192.png','/assets/icon-512.png']).catch(()=>{})))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('bca-tarah-')&&k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);
