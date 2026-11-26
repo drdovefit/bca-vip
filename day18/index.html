@@ -1,0 +1,814 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#753fae">
+<title>Build Your Flow</title>
+<style>
+:root{
+  --p:#753fae; --p-dark:#5a2e88; --p-soft:#efe6f7; --p-line:#ddd0ea;
+  --y:#d9ae45; --y-soft:#fbf3de; --y-dark:#8a6714;
+  --ink:#2a1840; --muted:#6e5f82; --bg:#faf7fc; --card:#fff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;min-height:100dvh}
+button{font:inherit;color:inherit}
+.wrap{max-width:560px;margin:0 auto;padding:16px 16px calc(110px + env(safe-area-inset-bottom))}
+section{display:none}
+section.on{display:block}
+.tag{display:inline-block;background:var(--y-soft);color:var(--y-dark);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:99px}
+h1{font-size:26px;line-height:1.15;margin:8px 0 4px;color:var(--p)}
+.sub{color:var(--muted);font-size:15px;line-height:1.4;margin:0 0 14px}
+.steps{display:flex;gap:6px;margin:0 0 14px}
+.steps span{flex:1;height:5px;border-radius:99px;background:var(--p-line)}
+.steps span.on{background:var(--p)}
+
+/* ---------- Pick ---------- */
+.quick{display:flex;gap:8px;margin:0 0 6px}
+.chip{border:2px solid var(--p-line);background:#fff;border-radius:99px;padding:8px 14px;font-size:14px;font-weight:600;color:var(--p);cursor:pointer}
+.group{font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media(min-width:520px){.grid{grid-template-columns:repeat(3,1fr)}}
+.pc{position:relative;border:3px solid transparent;background:var(--card);border-radius:18px;padding:0;overflow:hidden;text-align:left;cursor:pointer;box-shadow:0 1px 0 var(--p-line);transition:transform .12s}
+.pc:active{transform:scale(.97)}
+.pc .img{aspect-ratio:1;background:var(--p-soft);overflow:hidden}
+.pc img{width:100%;height:100%;object-fit:cover;display:block}
+.pc .nm{display:block;padding:8px 10px 10px;font-size:14px;font-weight:600;line-height:1.25;min-height:46px}
+.pc .nm small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:2px}
+.pc.on{border-color:var(--p)}
+.pc .num{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:var(--p);color:#fff;font-weight:800;font-size:17px;display:none;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.pc.on .num{display:flex}
+.pc .vid{position:absolute;top:8px;left:8px;background:rgba(42,24,64,.7);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px}
+
+.screen.sq{aspect-ratio:1}
+#arrows{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;display:none}
+.screen.sq #arrows{display:block}
+#arrows g.a{opacity:0;transition:opacity .45s}
+#arrows g.a.on{opacity:1}
+#arrows text{font:700 3.5px -apple-system,"Helvetica Neue",Arial,sans-serif;fill:#fff;paint-order:stroke;stroke:#2a1840;stroke-width:.9px;stroke-linejoin:round}
+.cd{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(42,24,64,.45);color:#fff}
+.cd.on{display:flex}.cd b{font-size:84px;line-height:1;color:var(--y)}.cd span{font-size:17px;font-weight:700;margin-top:6px}
+.nextlbl{display:block;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--y-dark);margin-bottom:2px}
+/* ---------- Purple puff helper ---------- */
+.puff{display:flex;align-items:flex-end;gap:10px;margin:4px 0 14px}
+.puff img{flex:0 0 78px;width:78px;height:auto}
+.bub{position:relative;background:#fff;border:2px solid var(--p);border-radius:18px;padding:10px 14px;font-size:15px;line-height:1.4;color:var(--ink);margin-bottom:22px}
+.bub:before{content:"";position:absolute;left:-10px;bottom:14px;border:8px solid transparent;border-right-color:var(--p);border-left:0}
+.bub b{color:var(--p)}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.pintro{text-align:center;padding:10px 0}
+.pintro img{width:150px;height:auto}
+.pintro .bub{text-align:left;margin:10px 0 18px;font-size:17px}
+.pintro .bub:before{left:50%;top:-10px;bottom:auto;transform:translateX(-50%);border:8px solid transparent;border-bottom-color:var(--p);border-top:0}
+.pintro ol{margin:6px 0 0;padding-left:22px}.pintro li{margin:6px 0}
+@media (prefers-reduced-motion:reduce){.puff img,.pintro img{animation:none}}
+
+/* ---------- Hello: the puff talks and shows each step ---------- */
+.hl{display:flex;align-items:flex-end;gap:10px;margin:14px 0 4px}
+.hpuff{flex:0 0 96px;width:96px;height:auto}
+.hpuff.talk{animation:none}
+@keyframes talk{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+#hsay{font-size:19px;line-height:1.4;min-height:112px;flex:1;font-weight:600;color:var(--ink)}
+.demo{position:relative;background:#fff;border:1px solid var(--p-line);border-radius:22px;height:270px;margin:6px 0 12px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.hdots{display:flex;gap:6px;justify-content:center;margin:0 0 14px}
+.hdots i{width:9px;height:9px;border-radius:50%;background:var(--p-line)}.hdots i.on{background:var(--p)}
+.d-tiles{display:flex;gap:10px;padding:0 14px}
+.d-tile{position:relative;width:96px;border-radius:14px;overflow:hidden;border:3px solid transparent;opacity:.55;transition:all .3s}
+.d-tile img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.d-tile.on{border-color:var(--p);opacity:1;transform:scale(1.05)}
+.d-tile b{position:absolute;top:5px;right:5px;width:26px;height:26px;border-radius:50%;background:var(--p);color:#fff;font-size:14px;display:none;align-items:center;justify-content:center}
+.d-tile.on b{display:flex}
+.d-hand{position:absolute;font-size:34px;transition:all .5s;left:50%;top:80%}
+.d-card{width:86%;text-align:left}
+.d-card small{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--y-dark)}
+.d-card h3{margin:2px 0 8px;font-size:19px}
+.d-card .r{display:flex;gap:12px;align-items:center}
+.d-card img{width:112px;height:112px;border-radius:14px;object-fit:cover}
+.d-card ul{margin:0;padding:0;list-style:none;font-size:14px;line-height:1.5}
+.d-card li{opacity:0;transform:translateX(8px);transition:all .4s}.d-card li.on{opacity:1;transform:none}
+.d-card li:before{content:"● ";color:var(--y)}
+.d-num{font-size:110px;font-weight:800;color:var(--y-dark);line-height:1}
+.d-lbl{font-size:15px;font-weight:700;color:var(--muted);text-align:center}
+.d-circ{width:150px;height:150px;border-radius:50%;background:var(--p-soft);border:5px solid var(--p);display:flex;align-items:center;justify-content:center;font-weight:800;letter-spacing:.1em;color:var(--p);transform:scale(.62);transition:transform 3s ease-in-out}
+.d-circ.big{transform:scale(1)}
+.d-days{display:flex;gap:5px;padding:0 8px}
+.d-day{flex:1;background:var(--p-soft);border-radius:12px;padding:10px 4px;text-align:center;font-size:11.5px;line-height:1.3;opacity:0;transform:translateY(8px);transition:all .4s}
+.d-day.on{opacity:1;transform:none}
+.d-day b{display:block;color:var(--p);font-size:14px;margin-bottom:3px}
+.d-day.sun{background:var(--y-soft)}.d-day.sun b{color:var(--y-dark)}
+@media (prefers-reduced-motion:reduce){.hpuff.talk{animation:none}}
+
+/* ---------- Bottom bar ---------- */
+.dock{position:fixed;left:0;right:0;bottom:0;background:rgba(250,247,252,.96);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-top:1px solid var(--p-line);padding:12px 16px calc(12px + env(safe-area-inset-bottom));display:none}
+.dock.on{display:block}
+.dock .in{max-width:560px;margin:0 auto;display:flex;gap:10px;align-items:center}
+.dock .info{flex:1;font-size:14px;color:var(--muted);line-height:1.3}
+.dock .info b{display:block;color:var(--ink);font-size:16px}
+.big{border:0;border-radius:99px;padding:16px 26px;font-size:18px;font-weight:700;background:var(--p);color:#fff;cursor:pointer;box-shadow:0 6px 18px rgba(117,63,174,.28)}
+.big:disabled{background:var(--p-line);box-shadow:none;color:#fff}
+.big.wide{display:block;width:100%}
+.big.alt{background:#fff;color:var(--p);border:2px solid var(--p-line);box-shadow:none}
+.big.gold{background:var(--y);color:var(--ink);box-shadow:0 6px 18px rgba(217,174,69,.35)}
+.link{background:none;border:0;color:var(--muted);font-size:15px;padding:8px;cursor:pointer;text-decoration:underline}
+
+/* ---------- Timing ---------- */
+.card{background:var(--card);border:1px solid var(--p-line);border-radius:18px;padding:6px 16px;margin:0 0 14px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1px solid #f0e9f6;gap:10px}
+.row:first-child{border-top:0}
+.row .name{font-size:16px;font-weight:600}
+.row .name small{display:block;color:var(--muted);font-size:13px;font-weight:400;margin-top:2px}
+.stp{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.stp button{width:44px;height:44px;border-radius:50%;border:0;background:var(--p-soft);color:var(--p);font-size:24px;font-weight:700;cursor:pointer;line-height:1}
+.stp output{min-width:54px;text-align:center;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.tgs{display:flex;gap:8px;flex-wrap:wrap;padding:12px 0}
+.tog{border:2px solid var(--p-line);background:#fff;border-radius:99px;padding:8px 14px;font-size:15px;color:var(--muted);cursor:pointer}
+.tog.on{border-color:var(--p);color:var(--p);background:var(--p-soft);font-weight:600}
+.order{list-style:none;margin:0;padding:0}
+.order li{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #f0e9f6}
+.order li:first-child{border-top:0}
+.order img{width:46px;height:46px;border-radius:10px;object-fit:cover;flex:0 0 46px;background:var(--p-soft)}
+.order .n{width:26px;height:26px;border-radius:50%;background:var(--p);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:0 0 26px}
+.order .t{flex:1;font-size:15px}
+.order .t small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.order .mv{display:flex;flex-direction:column}
+.order .mv button{border:0;background:none;color:var(--muted);font-size:17px;width:32px;height:30px;cursor:pointer}
+.stp.sm{gap:2px}.stp.sm button{width:36px;height:36px;font-size:20px}.stp.sm output{min-width:26px;font-size:18px}
+.stp button:disabled{opacity:.35}
+.order li{flex-wrap:nowrap}
+.label{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+
+/* ---------- Play ---------- */
+.top{display:flex;align-items:center;justify-content:space-between;margin:0 0 10px}
+.top .count{font-weight:700;color:var(--p);font-size:15px}
+.dots{display:flex;gap:5px;flex-wrap:wrap;margin:0 0 12px}
+.dots i{width:10px;height:10px;border-radius:50%;background:var(--p-line)}
+.dots i.done{background:var(--p)}
+.dots i.now{background:var(--y);box-shadow:0 0 0 3px var(--y-soft)}
+.pname{font-size:24px;line-height:1.2;margin:0 0 10px;color:var(--ink)}
+.side{display:inline-block;background:var(--p-soft);color:var(--p-dark);font-size:13px;font-weight:700;padding:3px 10px;border-radius:99px;margin-left:6px;vertical-align:middle}
+.screen{position:relative;border-radius:18px;overflow:hidden;background:#1d1229;aspect-ratio:16/9}
+.screen video,.screen img{width:100%;height:100%;object-fit:cover;display:block}
+.screen .soon{position:absolute;left:10px;bottom:10px;background:rgba(42,24,64,.78);color:#fff;font-size:12px;font-weight:700;padding:5px 10px;border-radius:99px}
+.screen .tap{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:rgba(29,18,41,.45);border:0;cursor:pointer}
+.screen .tap span{background:#fff;color:var(--p);font-weight:800;padding:14px 22px;border-radius:99px;font-size:17px}
+.screen .tap.on{display:flex}
+.vbar{height:6px;background:var(--p-soft);border-radius:99px;overflow:hidden;margin:10px 0 4px}
+.vbar i{display:block;height:100%;width:0;background:var(--y);border-radius:99px}
+.vleft{font-size:13px;color:var(--muted);text-align:right;margin:0 0 8px}
+.cues{list-style:none;margin:6px 0 16px;padding:0}
+.cues li{position:relative;padding:8px 0 8px 26px;font-size:17px;line-height:1.35;border-top:1px solid #f0e9f6}
+.cues li:first-child{border-top:0}
+.cues li:before{content:"";position:absolute;left:4px;top:15px;width:10px;height:10px;border-radius:50%;background:var(--y)}
+.btns{display:flex;gap:10px}
+.btns .big{flex:1;padding:15px 10px;font-size:17px}
+
+.mini{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--p-line);border-radius:18px;padding:10px}
+.mini img{flex:0 0 78px;width:78px;height:78px;border-radius:14px;object-fit:cover;background:var(--p-soft)}
+.mini h2{margin:0 0 3px;font-size:19px;line-height:1.2}
+.mini p{margin:0;font-size:14px;color:var(--muted);line-height:1.35}
+.stage{position:relative;width:min(80vw,320px,44dvh);aspect-ratio:1;margin:16px auto 6px}
+.stage svg{width:100%;height:100%;display:block}
+.mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center}
+.phase{font-size:24px;font-weight:800;letter-spacing:.12em;color:var(--p)}
+.secs{font-size:68px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.breath{font-size:14px;color:var(--muted);margin-top:4px;min-height:18px}
+.next{text-align:center;color:var(--muted);font-size:15px;min-height:22px;margin:0 0 14px}
+.next b{color:var(--ink)}
+body.vac .phase,body.hold .phase{color:var(--p-dark)}
+body.switch .phase{color:var(--y-dark)}
+
+.done{text-align:center;padding-top:30px}
+.done .badge{width:120px;height:120px;border-radius:50%;margin:0 auto 16px;background:var(--y-soft);border:5px solid var(--y);display:flex;align-items:center;justify-content:center;font-size:56px}
+.done h1{font-size:32px}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+.done{position:relative}
+.badge.compass{font-size:0;padding:10px;transform:scale(.2);opacity:0}
+.badge.compass svg{width:100%;height:100%}
+.done.go .badge.compass{animation:pop .7s cubic-bezier(.2,1.5,.4,1) forwards}
+#needle{transform-origin:50px 50px;transform:rotate(-40deg)}
+.done.go #needle{animation:spin 2.6s cubic-bezier(.15,.7,.2,1) .3s forwards}
+@keyframes pop{to{transform:scale(1);opacity:1}}
+@keyframes spin{0%{transform:rotate(-40deg)}70%{transform:rotate(1105deg)}82%{transform:rotate(1070deg)}92%{transform:rotate(1086deg)}100%{transform:rotate(1080deg)}}
+.daydone{font-size:14px;font-weight:800;letter-spacing:.2em;color:var(--y-dark);margin:0 0 4px}
+.done h1,.done .sub,.done .fdots,.done .big,.done .note{opacity:0;transform:translateY(10px)}
+.done.go h1{animation:rise .5s 2.7s forwards}.done.go .sub{animation:rise .5s 3.1s forwards}.done.go .fdots{animation:rise .5s 3.4s forwards}.done.go .big,.done.go .note{animation:rise .5s 3.9s forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+.fdots{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin:8px 0 0}
+.fdots i{width:11px;height:11px;border-radius:50%;background:var(--p-line)}.fdots i.on{background:var(--y)}
+@media (prefers-reduced-motion:reduce){.done.go *{animation-duration:.01s!important;animation-delay:0s!important}}
+.note{font-size:14px;color:var(--muted);text-align:center;margin:12px 0 0;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ========== 1. PICK ========== -->
+<section id="hello">
+  <span class="tag">Day 18 · Choose your own flow</span>
+  <div class="hl">
+    <span id="hpuff" hidden></span>
+    <div class="say" id="hsay"></div>
+  </div>
+  <video id="hvid" playsinline preload="metadata" poster="media/photos/intro-poster.jpg" style="display:none;width:100%;max-height:68dvh;border-radius:22px;background:#1d1229;margin:6px 0 12px"></video>
+  <div class="demo" id="demo"></div>
+  <div class="hdots" id="hdots"></div>
+  <button class="big wide" id="hgo">▶ Tell me how it works</button>
+  <p class="note"><button class="link" id="hskip">Skip, I know how it works</button></p>
+</section>
+
+<section id="pick">
+  <div class="steps"><span class="on"></span><span></span><span></span></div>
+  <span class="tag">Day 18 · Choose your own flow</span>
+  <h1>Pick your postures</h1>
+  <p class="sub">Pick the postures you're having a hard time with, then add ones you like. Tap them in the order you want. 2 or 3 is fine today!</p>
+  <div class="quick">
+    <button class="chip" id="all">Pick all (about 30 min)</button>
+    <button class="chip" id="how">How it works</button>
+    <button class="chip" id="clear">Clear</button>
+  </div>
+  <div id="groups"></div>
+</section>
+
+<!-- ========== 2. TIMING ========== -->
+<section id="time">
+  <div class="steps"><span class="on"></span><span class="on"></span><span></span></div>
+  <button class="link" id="back1" style="padding-left:0">‹ Back to postures</button>
+  <h1>Set your timing</h1>
+  <p class="sub">The challenge timing is already set for you. Change anything with − and +. Under your flow you can set how many vacuums for each posture.</p>
+  <div class="card" id="knobs"></div>
+  <div class="card">
+    <div class="tgs">
+      <button class="tog" id="tVid">Setup videos</button>
+      <button class="tog" id="tVoice">My voice</button>
+      <button class="tog" id="tBells">Soft bells</button>
+    </div>
+  </div>
+  <p class="label">Your flow · vacuums in each posture</p>
+  <div class="card"><ul class="order" id="order"></ul></div>
+  <button class="link" id="reset">Back to challenge timing</button>
+</section>
+
+<!-- ========== 3. PLAY ========== -->
+<section id="play">
+  <div class="top">
+    <span class="count" id="pcount">Posture 1 of 1</span>
+    <button class="link" id="end">End</button>
+  </div>
+  <div class="dots" id="dots"></div>
+
+  <!-- video part -->
+  <div id="ipart" style="display:none"><button id="igo" hidden></button></div>
+  <div id="vpart">
+    <h2 class="pname" id="vname"></h2>
+    <div class="screen" id="screen">
+      <video id="video" playsinline preload="auto"></video>
+      <img id="still" alt="" style="display:none">
+      <span class="soon" id="soon" style="display:none">Setup video coming soon</span>
+      <button class="tap" id="tap" aria-label="Play video"><span>▶ Play video</span></button>
+      <svg id="arrows" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="cd" id="cd"><b id="cdn">10</b><span>Get into position</span></div>
+    </div>
+    <div class="vbar"><i id="vprog"></i></div>
+    <p class="vleft" id="vleft"></p>
+    <ul class="cues" id="cues"></ul>
+    <div class="btns">
+      <button class="big alt" id="replay">Hear it again</button>
+      <button class="big" id="ready">I'm set, start now</button>
+    </div>
+  </div>
+
+  <!-- breathing part -->
+  <div id="bpart" style="display:none">
+    <div class="mini"><img id="bimg" alt=""><div><h2 id="bname"></h2><p id="bcue"></p></div></div>
+    <div class="stage">
+      <svg viewBox="0 0 200 200" aria-hidden="true">
+        <circle cx="100" cy="100" r="96" fill="none" stroke="var(--p-soft)" stroke-width="6"/>
+        <circle id="ring" cx="100" cy="100" r="96" fill="none" stroke="var(--p)" stroke-width="6" stroke-linecap="round" transform="rotate(-90 100 100)" stroke-dasharray="603.2" stroke-dashoffset="0"/>
+        <circle id="disc" cx="100" cy="100" r="60" fill="var(--p-soft)"/>
+      </svg>
+      <div class="mid">
+        <div class="phase" id="phase">INHALE</div>
+        <div class="secs" id="secs">3</div>
+        <div class="breath" id="breath"></div>
+      </div>
+    </div>
+    <p class="next" id="next"></p>
+    <div class="btns">
+      <button class="big gold" id="pp">Pause</button>
+      <button class="big alt" id="skip">Next posture</button>
+    </div>
+  </div>
+
+  <!-- finish -->
+  <div id="fpart" class="done" style="display:none">
+    <canvas id="confetti"></canvas>
+    <div class="badge compass" id="compass">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="44" fill="#fff" stroke="#753fae" stroke-width="3"/>
+        <g fill="#753fae" font-size="11" font-weight="800" text-anchor="middle" font-family="-apple-system,Helvetica,Arial,sans-serif"><text x="50" y="19">N</text><text x="50" y="91">S</text><text x="13" y="54">W</text><text x="87" y="54">E</text></g>
+        <g id="needle"><path d="M50 16 L57 50 L43 50 Z" fill="#d9ae45"/><path d="M50 84 L57 50 L43 50 Z" fill="#753fae"/><circle cx="50" cy="50" r="4" fill="#2a1840"/></g>
+      </svg>
+    </div>
+    <p class="daydone">DAY 18 DONE</p>
+    <h1>Congratulations, explorer!</h1>
+    <p class="sub" style="font-size:19px;font-weight:700;color:var(--ink);margin-bottom:6px">You chose your own flow!</p>
+    <p class="sub" id="fsum"></p>
+    <div class="fdots" id="fdots"></div>
+    <p class="sub" style="margin:10px 0 18px">See you tomorrow for Day 19 💜</p>
+    <button class="big wide" id="again">Do this flow again</button>
+    <p class="note"><button class="link" id="newflow">Pick a new flow</button></p>
+  </div>
+</section>
+
+</div>
+
+<!-- bottom bar for pick + timing -->
+<div class="dock on" id="dock"><div class="in">
+  <div class="info" id="dinfo"><b>Pick your first posture</b>Tap a photo</div>
+  <button class="big" id="dnext" disabled>Next</button>
+</div></div>
+
+<script>
+(function(){
+/* =====================================================================
+   POSTURES. One line each. To add a new one later (Thursday, Friday):
+   copy a line, give it a new id, then drop in
+     media/photos/<id>.jpg   (square photo of Dove in the posture)
+     media/videos/<id>.mp4   (Dove's 30 second setup video)
+   sides: 2 = do it on one side, then the other.
+   Plain position words only. No LPF names.
+   ===================================================================== */
+var POSTURES=[
+ {id:"split",      g:"Standing",       n:"Split stance lean",            sides:2, sideNames:["Left leg forward","Right leg forward"],
+   c:["One leg forward, lean forward in one long line","Back heel to the back of your ear, all in a straight line","Fingertips reach back toward the mat","Shoulders away from your ears"]},
+ {id:"hinge",      g:"Standing",       n:"Hip hinge, hands on thighs",
+   c:["Feet together","Hinge forward from your hips","Push your hands into your thighs"]},
+ {id:"hinge-low",  g:"Standing",       n:"Hip hinge, hands low",
+   c:["Slide your hands lower","Round your upper back up toward the ceiling","Feel the stretch in your hamstrings"]},
+ {id:"tall-kneel", g:"Kneeling",       n:"Tall kneeling",
+   c:["Come up tall on your knees","Hips right over your knees","Pad under your knees if you need it"]},
+ {id:"heels",      g:"Kneeling",       n:"Sit on your heels",
+   c:["Sit back on your heels","Ribs stacked over your pelvis","Push into your thighs and grow tall"]},
+ {id:"tabletop",   g:"Hands and knees",n:"Tabletop, upper back rounded",
+   c:["Hands and knees","Round your upper back","Breathe into your back ribs","Tip: if your wrists get sore, put socks under your palms"]},
+ {id:"forearms",   g:"Hands and knees",n:"Forearms",
+   c:["Come down to your forearms","Forearms parallel, like an 11","Push them into the mat","Head down between your arms"]},
+ {id:"diamond",    g:"Hands and knees",n:"Diamond hands",
+   c:["Thumbs and fingers make a diamond","Rest your forehead on your hands","Hips up over your knees, toes tucked"]},
+ {id:"seated",     g:"Seated",         n:"Seated tall",
+   c:["Cross your legs","Sit right on your sit bones","Hands on your knees, nice and tall"]},
+ {id:"legs-out",   g:"Seated",         n:"Seated, legs out",
+   c:["Kick your feet out in front","Push your hands into your thighs","Sit tall on your sit bones"]},
+ {id:"bridge",     g:"Lying down",     n:"Bridge",
+   c:["Lying down, knees bent","Feet a little wider than your hips","At the top of the vacuum, lift into a bridge","Then come back down"]},
+ {id:"cross",      g:"Lying down",     n:"Leg crossed, hand push",       sides:2, sideNames:["Right leg crossed","Left leg crossed"],
+   c:["Cross one leg over the other","Hand on the inside of your knee","Push your knee and hand into each other"]},
+ {id:"lying",      g:"Lying down",     n:"Foundation posture",
+   c:["Lying down, knees bent, feet flat","Arms by your sides","Float your arms overhead as you vacuum"]},
+ {id:"elbows",     g:"Lying down",     n:"Palms up, elbows out",
+   c:["Palms to the ceiling, elbows out","Bring your hands back overhead as you vacuum"]}
+];
+var BY={};POSTURES.forEach(function(p){p.sides=p.sides||1;BY[p.id]=p;});
+var MEDIA="media/";
+var PLACEHOLDER_SECS=30;   // until her video is in, the setup screen counts down this long
+var INTRO_SECS=15;         // placeholder intro countdown until her intro video is in
+var PAUSE=2;               // empty pause before each vacuum
+var SWITCH=8;              // seconds to switch sides
+var SPEED=+(new URLSearchParams(location.search).get("speed")||1); // test only: ?speed=20
+
+/* ---------- settings ---------- */
+var DEF={in:3,out:5,vac:10,max:20,before:3,after:1,vids:true,voice:true,bells:true};
+var KNOBS=[
+ {k:"vac",   name:"Vacuum hold",          u:" s", min:3,max:30},
+ {k:"max",   name:"Last vacuum",          u:" s", min:5,max:45, hint:"your max hold, at the very end"},
+ {k:"in",    name:"Inhale",               u:" s", min:2,max:8},
+ {k:"out",   name:"Exhale",               u:" s", min:3,max:10},
+ {k:"before",name:"Breaths before",       u:"",   min:1,max:6, hint:"before each vacuum"},
+ {k:"after", name:"Breaths after",        u:"",   min:0,max:4, hint:"after your last vacuum, before you move on"}
+];
+var cfg=JSON.parse(JSON.stringify(DEF)),pick=[],reps={};
+var DEF_VACS=2;            // default vacuums in each posture (one-sided: 1 each side)
+function nv(id){var p=BY[id],n=reps[id]||Math.max(DEF_VACS,p.sides);n=Math.max(p.sides,Math.min(6,n));return n-(n%p.sides);} // one-sided postures: 2, 4, 6
+function load(){try{var s=JSON.parse(localStorage.getItem("bca-day18")||"null");if(s){Object.keys(DEF).forEach(function(k){if(s.cfg&&k in s.cfg)cfg[k]=s.cfg[k]});if(Array.isArray(s.pick))pick=s.pick.filter(function(id){return BY[id]});if(s.reps)reps=s.reps;}}catch(e){}}
+function save(){if(typeof DEMO_REC!=="undefined"&&DEMO_REC)return;try{localStorage.setItem("bca-day18",JSON.stringify({cfg:cfg,pick:pick,reps:reps}))}catch(e){}}
+load();
+var DEMO_REC=/[?&]demo=1/.test(location.search);   // for filming the intro: quiet page, clean start, nothing saved
+if(DEMO_REC){cfg=JSON.parse(JSON.stringify(DEF));cfg.voice=false;cfg.bells=false;pick=[];reps={};}
+
+function $(id){return document.getElementById(id)}
+function show(id){["hello","pick","time","play"].forEach(function(s){$(s).classList.toggle("on",s===id)});$("dock").classList.toggle("on",id==="pick"||id==="time");window.scrollTo(0,0);dock();}
+var PV={};   // which still is in use per posture, so a changed photo is never served from an old cache
+function img(id){return MEDIA+"photos/"+id+".jpg"+(PV[id]?"?v="+encodeURIComponent(PV[id]):"")}
+fetch(MEDIA+"photo-choices.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){PV=d;if(typeof drawPick==="function"&&$("pick"))drawPick();}).catch(function(){});
+function vid(id){return MEDIA+"videos/"+id+".mp4"}
+
+/* which setup videos exist? (checked once, quietly) */
+var HAS={};
+POSTURES.concat([{id:"intro"}]).forEach(function(p){
+  var v=document.createElement("video");v.preload="metadata";v.muted=true;
+  v.onloadedmetadata=function(){HAS[p.id]=v.duration||30;markVid(p.id);if(p.id==="intro"&&typeof hLayout==="function"&&hi<0)hLayout();};
+  v.onerror=function(){HAS[p.id]=0;};
+  v.src=vid(p.id);
+});
+function markVid(id){var el=document.querySelector('.pc[data-id="'+id+'"] .vid');if(el)el.style.display="block";}
+
+/* ---------- 1. Pick ---------- */
+function drawPick(){
+  var box=$("groups");box.innerHTML="";var g=null,grid;
+  POSTURES.forEach(function(p){
+    if(p.g!==g){g=p.g;var h=document.createElement("div");h.className="group";h.textContent=g;box.appendChild(h);grid=document.createElement("div");grid.className="grid";box.appendChild(grid);}
+    var b=document.createElement("button");b.className="pc";b.dataset.id=p.id;
+    b.innerHTML='<div class="img"><img src="'+img(p.id)+'" alt="" loading="lazy"></div><span class="nm">'+p.n+(p.sides>1?"<small>Both sides</small>":"")+'</span><span class="num"></span><span class="vid" style="display:'+(HAS[p.id]?"block":"none")+'">▶ video</span>';
+    b.onclick=function(){var i=pick.indexOf(p.id);if(i>=0)pick.splice(i,1);else pick.push(p.id);save();marks();};
+    grid.appendChild(b);
+  });
+  marks();
+}
+function marks(){
+  document.querySelectorAll(".pc").forEach(function(b){var i=pick.indexOf(b.dataset.id);b.classList.toggle("on",i>=0);b.querySelector(".num").textContent=i>=0?i+1:"";});
+  dock();
+}
+$("all").onclick=function(){pick=POSTURES.map(function(p){return p.id});save();marks();};
+$("clear").onclick=function(){pick=[];save();marks();};
+
+/* ---------- timing maths ---------- */
+function postureSecs(p){
+  var video=cfg.vids?(HAS[p.id]||PLACEHOLDER_SECS):0;
+  var one=cfg.before*(cfg.in+cfg.out)+PAUSE+cfg.vac;
+  return video+one*nv(p.id)+p.sides*cfg.after*(cfg.in+cfg.out)+(p.sides-1)*SWITCH;
+}
+function totalSecs(){return (pick.length?Math.max(0,cfg.max-cfg.vac):0)+0+pick.reduce(function(a,id){return a+postureSecs(BY[id])},0);}
+function mins(s){var m=Math.round(s/60);return m<1?"under 1 min":m+" min";}
+
+/* ---------- bottom bar ---------- */
+var where="pick";
+function dock(){
+  var n=pick.length,on=$("time").classList.contains("on");
+  if(!on){
+    $("dinfo").innerHTML=n?"<b>"+n+" picked</b>About "+mins(totalSecs()):"<b>Pick your first posture</b>Tap a photo";
+    $("dnext").textContent="Next";$("dnext").disabled=!n;
+  }else{
+    $("dinfo").innerHTML="<b>About "+mins(totalSecs())+"</b>"+n+" posture"+(n>1?"s":"");
+    $("dnext").textContent="Start";$("dnext").disabled=!n;
+  }
+}
+$("dnext").onclick=function(){
+  if($("pick").classList.contains("on")){drawTime();show("time");}
+  else start();
+};
+$("back1").onclick=function(){show("pick");marks();};
+
+/* ---------- 2. Timing ---------- */
+function drawTime(){
+  var kn=$("knobs");kn.innerHTML="";
+  KNOBS.forEach(function(o){
+    var r=document.createElement("div");r.className="row";
+    r.innerHTML='<div class="name">'+o.name+(o.hint?"<small>"+o.hint+"</small>":"")+'</div><div class="stp"><button aria-label="Less">−</button><output>'+cfg[o.k]+o.u+'</output><button aria-label="More">+</button></div>';
+    var b=r.querySelectorAll("button");
+    b[0].onclick=function(){cfg[o.k]=Math.max(o.min,cfg[o.k]-1);save();drawTime();};
+    b[1].onclick=function(){cfg[o.k]=Math.min(o.max,cfg[o.k]+1);save();drawTime();};
+    kn.appendChild(r);
+  });
+  [["tVid","vids"],["tVoice","voice"],["tBells","bells"]].forEach(function(x){$(x[0]).className="tog"+(cfg[x[1]]?" on":"");$(x[0]).onclick=function(){cfg[x[1]]=!cfg[x[1]];save();drawTime();};});
+  var ol=$("order");ol.innerHTML="";
+  pick.forEach(function(id,i){
+    var p=BY[id],li=document.createElement("li");
+    var n=nv(id);
+    li.innerHTML='<span class="n">'+(i+1)+'</span><img src="'+img(id)+'" alt=""><span class="t">'+p.n+'<small>'+n+' vacuum'+(n>1?'s':'')+(p.sides>1?' · '+(n/2)+' each side':'')+'</small></span><span class="stp sm"><button aria-label="Fewer vacuums">−</button><output>'+n+'</output><button aria-label="More vacuums">+</button></span><span class="mv"><button aria-label="Move up">↑</button><button aria-label="Take out">✕</button></span>';
+    var b=li.querySelectorAll("button");
+    b[0].disabled=n<=p.sides;b[1].disabled=n>=6;
+    b[0].onclick=function(){reps[id]=Math.max(p.sides,n-p.sides);save();drawTime();};
+    b[1].onclick=function(){reps[id]=Math.min(6,n+p.sides);save();drawTime();};
+    b[2].style.visibility=i?"visible":"hidden";
+    b[2].onclick=function(){pick.splice(i,1);pick.splice(i-1,0,id);save();drawTime();};
+    b[3].onclick=function(){pick.splice(i,1);save();if(!pick.length){show("pick");marks();}else drawTime();};
+    ol.appendChild(li);
+  });
+  dock();
+}
+$("reset").onclick=function(){["in","out","vac","max","before","after"].forEach(function(k){cfg[k]=DEF[k]});save();drawTime();};
+
+/* ---------- sound ---------- */
+var ac=null,buf={},CLIPS=["in1","in2","in3","in4","in5","out1","out2","out3","out4","out5","vac1","vac2","vac3","rel1","rel2","rel3","rel4","rel5","stop1","stop3","amazing"];
+function actx(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==="suspended")ac.resume();}catch(e){ac=null}return ac}
+function loadVoice(){
+  if(!ac)return;
+  CLIPS.forEach(function(n){if(buf[n])return;fetch(MEDIA+"voice/"+n+".mp3").then(function(r){return r.arrayBuffer()}).then(function(a){return new Promise(function(res,rej){ac.decodeAudioData(a,res,rej)})}).then(function(b){buf[n]=b}).catch(function(){});});
+}
+var rot={};
+function say(base,count){if(!cfg.voice||!ac)return;var n=count?base+(((rot[base]=(rot[base]||0)%count+1))):base;var b=buf[n];if(!b)return;var s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start();}
+function bell(f,at,len,vol){if(!cfg.bells||!ac)return;var t=ac.currentTime+(at||0);[[1,1],[2.76,.32],[5.4,.14]].forEach(function(pt){var o=ac.createOscillator(),g=ac.createGain();o.type="sine";o.frequency.value=f*pt[0];g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol*pt[1],t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+len/(1+pt[0]*.2));o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+len);});}
+
+/* Dove's recorded voice: one shared player, unlocked on the first tap (iPhone) */
+var vo=new Audio();vo.preload="auto";var voOn=null;
+function voUnlock(){try{vo.muted=true;vo.src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAIlYAAESsAAACABAAZGF0YQAAAAA=";var p=vo.play();if(p&&p.catch)p.catch(function(){});vo.muted=false;}catch(e){}}
+function voPlay(file,onend,onfail,ontime){voStop();voOn={end:onend,time:ontime,fail:onfail};vo.src=MEDIA+"voice/"+file;vo.currentTime=0;var p=vo.play();if(p&&p.catch)p.catch(function(){voOn=null;if(onfail)onfail();});}
+function voStop(){voOn=null;try{vo.pause()}catch(e){}}
+vo.addEventListener("ended",function(){var o=voOn;voOn=null;if(o&&o.end)o.end();});
+vo.addEventListener("error",function(){var o=voOn;voOn=null;if(o&&o.fail)o.fail();});
+vo.addEventListener("timeupdate",function(){if(voOn&&voOn.time&&vo.duration)voOn.time(vo.currentTime,vo.duration);});
+
+/* ---------- Arrow labels on Dove's photo (LPF cue card style), timed to her words ----------
+   media/arrows.json: per posture, {t: second she says it, side, ly, x, y, s: label} or {line:[x1,y1,x2,y2], ...}. All in % of the square photo. */
+var ARROWS={};fetch(MEDIA+"arrows.json").then(function(r){return r.json()}).then(function(d){ARROWS=d}).catch(function(){});
+function chev(x,y,ang,col){return '<path d="M-2.2 -1.7 L0 0 L-2.2 1.7" transform="translate('+x+' '+y+') rotate('+ang+')" fill="none" stroke="'+col+'" stroke-width=".9" stroke-linecap="round" stroke-linejoin="round"/>';}
+function drawArrows(id){
+  var a=ARROWS[id]||[],h="";
+  a.forEach(function(o,k){
+    h+='<g class="a" data-t="'+(o.t==null?0:o.t)+'">';
+    if(o.line){var L=o.line,ang=Math.atan2(L[3]-L[1],L[2]-L[0])*180/Math.PI;
+      h+='<line x1="'+L[0]+'" y1="'+L[1]+'" x2="'+L[2]+'" y2="'+L[3]+'" stroke="#fff" stroke-width="1.3" stroke-dasharray=".1 2.6" stroke-linecap="round"/>'
+        +'<line x1="'+L[0]+'" y1="'+L[1]+'" x2="'+L[2]+'" y2="'+L[3]+'" stroke="#753fae" stroke-width=".8" stroke-dasharray=".1 2.6" stroke-linecap="round"/>'
+        +chev(L[2],L[3],ang,"#d9ae45")+chev(L[0],L[1],ang+180,"#d9ae45")
+        +'<text x="'+o.lx+'" y="'+o.ly+'" text-anchor="middle">'+o.s+'</text>';
+    }else{var ex=o.side==="l"?2:98,ang2=Math.atan2(o.y-o.ly,o.x-ex)*180/Math.PI;
+      h+='<line x1="'+ex+'" y1="'+o.ly+'" x2="'+o.x+'" y2="'+o.y+'" stroke="#d9ae45" stroke-width=".8" stroke-dasharray=".1 2.2" stroke-linecap="round"/>'
+        +'<rect x="'+(o.side==="l"?1.2:98)+'" y="'+(o.ly-2)+'" width=".8" height="4" fill="#d9ae45"/>'
+        +chev(o.x,o.y,ang2,"#d9ae45")
+        +'<text x="'+(o.side==="l"?3:97)+'" y="'+(o.ly-1.6)+'" text-anchor="'+(o.side==="l"?"start":"end")+'">'+o.s+'</text>';
+    }
+    h+='</g>';
+  });
+  $("arrows").innerHTML=h;
+}
+function showArrows(t){$("arrows").querySelectorAll("g.a").forEach(function(g){g.classList.toggle("on",t>=+g.dataset.t)});}
+
+/* ---------- 3. Play ---------- */
+var seq=[],pi=0,steps=[],si=0,left=0,tick=null,paused=false,mode="",lock=null,vtimer=null,vleft=0;
+var video=$("video");
+
+function buildSteps(p,isLast){
+  var s=[];
+  var n=nv(p.id),per=n/p.sides,vn=0;
+  for(var side=0;side<p.sides;side++){
+    if(side>0)s.push({k:"switch",d:SWITCH,side:side});
+    for(var r=0;r<per;r++){vn++;
+      var lastSide=r===per-1,finalVac=isLast&&side===p.sides-1&&lastSide;
+      // same breath rhythm every vacuum: the release breath after a vacuum counts as breath 1 of the next
+      for(var b=1;b<=cfg.before;b++){var rl=(r>0&&b===1);s.push({k:"in",d:cfg.in,b:b,of:cfg.before,side:side,vn:vn,vt:n,rl:rl});s.push({k:"out",d:cfg.out,b:b,of:cfg.before,side:side,vn:vn,vt:n,rl:rl});}
+      s.push({k:"pause",d:PAUSE,side:side,vn:vn,vt:n});
+      s.push({k:"vac",d:finalVac?cfg.max:cfg.vac,max:finalVac,side:side,vn:vn,vt:n,lastOfSide:lastSide});
+      if(lastSide)for(var a=1;a<=cfg.after;a++){s.push({k:"in",d:cfg.in,b:a,of:cfg.after,rel:1,side:side,vn:vn,vt:n});s.push({k:"out",d:cfg.out,b:a,of:cfg.after,rel:1,side:side,vn:vn,vt:n});}
+    }
+  }
+  return s;
+}
+
+function start(){
+  if(!pick.length)return;
+  actx();loadVoice();voUnlock();
+  // unlock the video element inside the tap (iPhone)
+  try{video.muted=true;video.src=vid(pick[0]);var pr=video.play();if(pr&&pr.catch)pr.catch(function(){});video.pause();video.muted=false;}catch(e){}
+  seq=pick.slice();pi=0;show("play");wake();
+  $("fpart").style.display="none";
+  goPosture();
+}
+function drawDots(){var d=$("dots");d.innerHTML="";if(pi<0){seq.forEach(function(){d.appendChild(document.createElement("i"))});return;}seq.forEach(function(id,i){var e=document.createElement("i");e.className=i<pi?"done":i===pi?"now":"";d.appendChild(e);});$("pcount").textContent="Posture "+(pi+1)+" of "+seq.length;}
+
+function goPosture(){
+  stopAll();$("ipart").style.display="none";
+  if(pi>=seq.length){finish();return;}
+  if(pi<0){introPart();return;}
+  var p=BY[seq[pi]];drawDots();
+  if(cfg.vids)videoPart(p);else breathePart(p);
+}
+
+/* video / setup part */
+function videoPart(p){
+  mode="video";$("ready").textContent="I'm set, start";$("soon").textContent="Setup video coming soon";
+  $("vpart").style.display="block";$("bpart").style.display="none";
+  $("cd").classList.remove("on");
+  $("vname").innerHTML='<span class="nextlbl">'+(pi===0?"First posture":"Next posture")+'</span>'+p.n+(p.sides>1?'<span class="side">'+p.sideNames[0]+' first</span>':"");
+  $("cues").innerHTML=p.c.map(function(x){return "<li>"+x+"</li>"}).join("");
+  $("tap").classList.remove("on");$("vprog").style.width="0";
+  bell(1320,0,2.4,.06);
+  $("screen").classList.remove("sq");
+  if(HAS[p.id]){
+    $("still").style.display="none";$("soon").style.display="none";video.style.display="block";
+    video.src=vid(p.id);video.currentTime=0;video.poster=img(p.id);
+    var pr=video.play();if(pr&&pr.catch)pr.catch(function(){$("tap").classList.add("on");});
+  }else{
+    video.removeAttribute("src");video.style.display="none";
+    $("still").src=img(p.id);$("still").style.display="block";$("soon").style.display="block";
+    $("soon").style.display="none";
+    $("screen").classList.add("sq");drawArrows(p.id);showArrows(-1);
+    var silent=function(){
+      var T0=Date.now();var at=setInterval(function(){if(mode!=="video"&&mode!=="count"){clearInterval(at);return;}showArrows((Date.now()-T0)/1000*SPEED*1.2);},400);   // no voice file (or sound off): quiet 30 s to read the cues
+      vleft=PLACEHOLDER_SECS;showVLeft();
+      vtimer=setInterval(function(){if(paused)return;vleft=Math.max(0,vleft-SPEED);showVLeft();if(vleft<=0){clearInterval(vtimer);vtimer=null;countdown(p);}},1000);
+    };
+    if(cfg.voice&&SPEED===1){
+      $("vleft").textContent="Listen to the setup";
+      voPlay("setup-"+p.id+".mp3",function(){if(mode==="video")countdown(p);},silent,function(t,d){showArrows(t);$("vprog").style.width=(100*t/d)+"%";$("vleft").textContent="Countdown in "+Math.ceil(d-t)+" s";});
+    }else silent();
+  }
+}
+function showVLeft(){$("vprog").style.width=(100*(PLACEHOLDER_SECS-vleft)/PLACEHOLDER_SECS)+"%";$("vleft").textContent="Countdown in "+Math.ceil(vleft)+" s";}
+/* after Dove's setup: 10 second countdown, then the first inhale starts by itself */
+var CD=10;
+function countdown(p){
+  clearInterval(vtimer);vtimer=null;mode="count";try{video.pause()}catch(e){}voStop();
+  showArrows(1e9);
+  var n=CD;$("cdn").textContent=n;$("cd").classList.add("on");$("vleft").textContent="First inhale in "+n+" s";bell(1320,0,1.4,.05);
+  vtimer=setInterval(function(){if(paused)return;n=Math.max(0,n-SPEED);var c=Math.ceil(n);$("cdn").textContent=c;$("vleft").textContent="First inhale in "+c+" s";if(c<=3&&c>0)bell(1760,0,.6,.04);if(n<=0){clearInterval(vtimer);vtimer=null;$("cd").classList.remove("on");breathePart(p);}},1000);
+}
+video.addEventListener("timeupdate",function(){if(mode!=="video"||!video.duration)return;$("vprog").style.width=(100*video.currentTime/video.duration)+"%";$("vleft").textContent="Breathing starts in "+Math.ceil(video.duration-video.currentTime)+" s";});
+video.addEventListener("ended",function(){if(mode!=="video")return;if(pi<0){pi=0;goPosture();}else countdown(BY[seq[pi]]);});
+$("igo").onclick=function(){pi=0;goPosture();};
+$("tap").onclick=function(){actx();video.play();$("tap").classList.remove("on");};
+$("replay").onclick=function(){var id=pi<0?"intro":seq[pi];if(HAS[id]){video.currentTime=0;video.play();}else{clearInterval(vtimer);voStop();pi<0?introPart():videoPart(BY[id]);}};
+$("ready").onclick=function(){if(pi<0){pi=0;goPosture();}else{$("cd").classList.remove("on");breathePart(BY[seq[pi]]);}};
+
+/* intro (Dove's welcome video, before the first posture) */
+function introPart(){
+  mode="video";drawDots();$("pcount").textContent="Welcome";
+  $("vpart").style.display="block";$("bpart").style.display="none";
+  $("vname").innerHTML="Welcome to your flow";
+  $("cues").innerHTML="<li>Your postures: "+seq.map(function(id){return BY[id].n}).join(", ")+"</li>";
+  $("ready").textContent="Start my flow";$("tap").classList.remove("on");$("vprog").style.width="0";
+  if(HAS.intro){
+    $("still").style.display="none";$("soon").style.display="none";video.style.display="block";
+    video.src=vid("intro");video.currentTime=0;video.removeAttribute("poster");
+    var pr=video.play();if(pr&&pr.catch)pr.catch(function(){$("tap").classList.add("on");});
+  }else{
+    // no intro video: the purple puff explains it
+    pi=0;goPosture();
+  }
+}
+
+/* breathing part */
+function breathePart(p){
+  stopAll();mode="breathe";paused=false;setPP();
+  $("vpart").style.display="none";$("bpart").style.display="block";
+  $("bimg").src=img(p.id);
+  steps=buildSteps(p,pi===seq.length-1);si=-1;
+  nextStep();
+  tick=setInterval(function(){if(paused)return;left-=0.1*SPEED;if(left<=0.001)nextStep();else draw();},100);
+}
+function nextStep(){
+  si++;var p=BY[seq[pi]];
+  if(si>=steps.length){pi++;goPosture();return;}
+  var s=steps[si];left=s.d;
+  document.body.className=s.k;
+  // sounds
+  if(s.k==="in"){bell(2350,0,1.6,.05);say(s.rel||s.rl?"rel":"in",5);}
+  if(s.k==="out"){bell(1760,0,1.6,.05);say("out",5);}
+  if(s.k==="pause"){say(si%2?"stop3":"stop1");}
+  if(s.k==="vac"){bell(1760,0,2.2,.07);say("vac",3);}
+  if(s.k==="switch"){bell(1760,0,2,.07);bell(2350,.3,2.6,.06);}
+  // a soft bell when the vacuum ends
+  if(si>0&&steps[si-1].k==="vac")bell(1320,0,2.4,.06);
+  // words
+  var sideTxt=p.sides>1?" · "+p.sideNames[s.side]:"";
+  $("bname").textContent=p.n;
+  $("bcue").textContent=p.sides>1?p.sideNames[s.side]:p.c[0];
+  var ph=s.max?"MAX HOLD":{in:"INHALE",out:"EXHALE",pause:"PAUSE",vac:"VACUUM",switch:"SWITCH SIDES"}[s.k];
+  $("phase").textContent=ph;
+  var br="";
+  if(s.k==="in"||s.k==="out")br=(s.rel?"Release · breath "+s.b+" of "+s.of:(s.rl?"Release · breath ":"Breath ")+s.b+" of "+s.of);
+  if(s.k==="vac"&&s.vt>1)br="Vacuum "+s.vn+" of "+s.vt;
+  if(s.k==="pause")br="Empty, swallow";
+  if(s.k==="vac"&&s.vt<2)br="Open your ribs";
+  if(s.k==="switch")br=p.sideNames[s.side];
+  $("breath").textContent=br;
+  // what's next
+  var nx="";
+  var lastOfPosture=steps.slice(si+1).every(function(x){return x.k==="in"||x.k==="out"})&&steps.slice(0,si+1).some(function(x){return x.k==="vac"&&x.side===p.sides-1});
+  if(s.k==="vac"||lastOfPosture){
+    if(s.k==="vac"&&!(s.lastOfSide&&s.side===p.sides-1))nx=(s.lastOfSide?"Next: <b>"+p.sideNames[s.side+1]+"</b>":"Next: <b>vacuum "+(s.vn+1)+" of "+s.vt+"</b>");
+    else nx=pi+1<seq.length?"Next: <b>"+BY[seq[pi+1]].n+"</b>":(s.k==="vac"?"Last one, max hold":"Almost done");
+  }
+  $("next").innerHTML=nx;
+  $("ring").style.stroke=s.k==="switch"?"var(--y)":"var(--p)";
+  if(s.max)$("ring").style.stroke="var(--y)";
+  $("disc").style.fill=s.max?"var(--y-soft)":s.k==="vac"?"#e6d6f4":s.k==="switch"?"var(--y-soft)":"var(--p-soft)";
+  draw();
+}
+function ease(x){return .5-.5*Math.cos(Math.PI*x)}
+function draw(){
+  var s=steps[si];if(!s)return;var f=Math.min(1,Math.max(0,1-left/s.d)),sc=.62;
+  if(s.k==="in")sc=.62+.38*ease(f);else if(s.k==="out")sc=1-.38*ease(f);else if(s.k==="switch")sc=.8;
+  $("disc").setAttribute("r",(86*sc).toFixed(1));
+  $("ring").setAttribute("stroke-dashoffset",(603.2*f).toFixed(1));
+  $("secs").textContent=Math.max(1,Math.ceil(left-0.001));
+}
+function setPP(){$("pp").textContent=paused?"Resume":"Pause";}
+$("pp").onclick=function(){paused=!paused;setPP();if(!paused)actx();};
+document.addEventListener("visibilitychange",function(){if(document.visibilityState!=="visible"&&mode==="video")try{vo.pause()}catch(e){}else if(mode==="video"&&voOn)vo.play().catch(function(){});});
+$("skip").onclick=function(){pi++;goPosture();};
+
+function stopAll(){voStop();$("cd").classList.remove("on");clearInterval(tick);tick=null;clearInterval(vtimer);vtimer=null;try{video.pause()}catch(e){}document.body.className="";}
+function finish(){
+  stopAll();mode="done";
+  $("vpart").style.display="none";$("bpart").style.display="none";$("fpart").style.display="block";
+  $("dots").innerHTML="";$("pcount").textContent="All done";
+  $("fsum").textContent=seq.length+" posture"+(seq.length>1?"s":"")+", your timing, your flow. Amazing work today.";
+  var fd="";for(var k=1;k<=20;k++)fd+='<i class="'+(k<=18?"on":"")+'"></i>';$("fdots").innerHTML=fd;
+  var F=$("fpart");F.classList.remove("go");void F.offsetWidth;F.classList.add("go");
+  fanfare();setTimeout(confetti,2700/SPEED);setTimeout(function(){say("amazing")},3600/SPEED);
+}
+/* our own little synth fanfare: compass ticks while it spins, a "found it" chime, then a happy run up */
+function tone(f,at,len,vol,type){if(!cfg.bells||!ac)return;var t=ac.currentTime+at,o=ac.createOscillator(),g=ac.createGain();o.type=type||"triangle";o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+len);o.connect(g);g.connect(ac.destination);o.start(t);o.stop(t+len+.05);}
+function fanfare(){
+  actx();
+  for(var k=0;k<16;k++)tone(1500+60*k,.3+k*(.07+k*.006),.05,.035,"square");      // ticks slow down as the needle settles
+  [[784,2.7],[988,2.82],[1175,2.94],[1568,3.06]].forEach(function(n){tone(n[0],n[1],.5,.11);tone(n[0]*2,n[1],.35,.04,"sine");});   // found it
+  [[1047,3.5],[1319,3.62],[1568,3.74],[2093,3.9]].forEach(function(n){tone(n[0],n[1],.9,.09);});                               // hooray
+  bell(2350,4.1,3.5,.05);
+}
+function confetti(){
+  var c=$("confetti"),x=c.getContext("2d"),W=c.width=innerWidth,H=c.height=innerHeight,P=[],cols=["#753fae","#d9ae45","#efe6f7","#fbf3de","#5a2e88"];
+  for(var k=0;k<90;k++)P.push({x:W/2+(Math.random()-.5)*60,y:H*.28,vx:(Math.random()-.5)*11,vy:-Math.random()*11-3,r:4+Math.random()*5,a:Math.random()*6,va:(Math.random()-.5)*.4,c:cols[k%cols.length]});
+  var t0=performance.now();
+  (function step(now){var el=now-t0;x.clearRect(0,0,W,H);P.forEach(function(p){p.vy+=.28;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.a+=p.va;x.save();x.translate(p.x,p.y);x.rotate(p.a);x.globalAlpha=Math.max(0,1-el/3800);x.fillStyle=p.c;x.fillRect(-p.r,-p.r*.5,p.r*2,p.r);x.restore();});
+    if(el<3900&&mode==="done")requestAnimationFrame(step);else x.clearRect(0,0,W,H);})(t0);
+}
+$("again").onclick=function(){start();};
+$("newflow").onclick=function(){stopAll();show("pick");marks();};
+$("end").onclick=function(){if(mode==="done"||confirm("End your flow?")){stopAll();try{lock&&lock.release()}catch(e){}mode="";show("time");drawTime();}};
+
+function wake(){try{if("wakeLock" in navigator)navigator.wakeLock.request("screen").then(function(l){lock=l}).catch(function(){})}catch(e){}}
+document.addEventListener("visibilitychange",function(){if(document.visibilityState==="visible"&&mode)wake();});
+
+drawPick();
+
+/* ---------- Hello: the puff speaks and shows what to do ----------
+   Each line can have a voice file: media/voice/intro-1.mp3 ... intro-6.mp3 (Dove's own voice).
+   With a file, the line lasts as long as the voice. Without, it shows for `d` seconds. */
+var HELLO=[   // at = second in media/voice/intro.mp3 where Dove starts talking about it
+ {at:0,   d:6,  t:"Welcome to day 18. Today you choose your own flow.", demo:"wave"},
+ {at:26,  d:9,  t:"Pick the postures you're having a hard time with. Add some you like.", demo:"pick"},
+ {at:48,  d:9,  t:"Your sequence plays like a class. Before each posture, my picture and my cues come on.", demo:"card"},
+ {at:57,  d:9,  t:"Watch the screen. After my setup there's a 10 second countdown, then your first inhale starts.", demo:"count"},
+ {at:66,  d:8,  t:"Go nice and easy. Today is about perfecting the posture, the breathing and the vacuum.", demo:"breathe"},
+ {at:73,  d:10, t:"2 or 3 postures is fine today.", demo:"days"},
+ {at:93,  d:9,  t:"Choose how many breaths you want between vacuums. More breaths is easier. Fewer is more advanced.", demo:"knobs"},
+ {at:108, d:7,  t:"You get 10 seconds to switch, plus the time to set up.", demo:"count"},
+ {at:116, d:6,  t:"Do what makes sense to you, and let me know how you like this format!", demo:"wave"}
+];
+var hi=-1,hT=[],hTalk=false;
+function hClear(){hT.forEach(clearTimeout);hT=[];}
+function hLater(f,ms){hT.push(setTimeout(f,ms/SPEED));}
+var DEMO={
+ wave:function(b){b.innerHTML='<div style="text-align:center"><div style="font-size:15px;font-weight:700;letter-spacing:.08em;color:var(--y-dark)">DAY 18</div><div style="font-size:30px;font-weight:800;color:var(--p);line-height:1.15">Choose your<br>own flow</div></div>';},
+ pick:function(b){
+   b.innerHTML='<div class="d-tiles">'+["split","tabletop","bridge"].map(function(id){return '<div class="d-tile"><img src="'+img(id)+'" alt=""><b></b></div>'}).join("")+'</div><span class="d-hand">👆</span>';
+   var ts=b.querySelectorAll(".d-tile"),h=b.querySelector(".d-hand");
+   [1,0,2].forEach(function(k,n){hLater(function(){h.style.left=(18+k*32)+"%";h.style.top="62%";},600+n*1900);hLater(function(){ts[k].classList.add("on");ts[k].querySelector("b").textContent=n+1;},1200+n*1900);});
+ },
+ card:function(b){
+   b.innerHTML='<div class="d-card"><small>Next posture</small><h3>Tabletop, upper back rounded</h3><div class="r"><img src="'+img("tabletop")+'" alt=""><ul><li>Hands under your shoulders</li><li>Push the floor away</li><li>Round your upper back</li></ul></div></div>';
+   b.querySelectorAll("li").forEach(function(li,n){hLater(function(){li.classList.add("on")},1500+n*1800);});
+ },
+ count:function(b){
+   b.innerHTML='<div><div class="d-num" id="dn">10</div><div class="d-lbl">Get into position</div></div>';
+   var n=10;for(var k=1;k<=10;k++)(function(k){hLater(function(){var e=document.getElementById("dn");if(!e)return;if(10-k>0)e.textContent=10-k;else b.innerHTML='<div class="d-circ" id="dc">INHALE</div>',hLater(function(){var c=document.getElementById("dc");if(c)c.classList.add("big")},60);},k*520);})(k);
+ },
+ breathe:function(b){
+   b.innerHTML='<div class="d-circ" id="dc">INHALE</div>';
+   var c=b.firstChild,st=[["INHALE",1],["EXHALE",0],["INHALE",1],["VACUUM",0]];
+   st.forEach(function(x,n){hLater(function(){c.textContent=x[0];c.classList.toggle("big",!!x[1]);},60+n*2400);});
+ },
+ knobs:function(b){
+   b.innerHTML='<div style="width:84%"><div class="row" style="border:0"><div class="name">Breaths before<small>before each vacuum</small></div><div class="stp"><button>−</button><output id="dk">3</output><button>+</button></div></div><div class="d-lbl" id="dkl" style="margin-top:10px">More breaths = easier</div></div>';
+   [[4,"More breaths = easier"],[5,"More breaths = easier"],[2,"Fewer breaths = more advanced"]].forEach(function(x,n){hLater(function(){var e=document.getElementById("dk");if(e){e.textContent=x[0];document.getElementById("dkl").textContent=x[1];}},1500+n*1800);});
+ },
+ days:function(b){
+   b.innerHTML='<div class="d-days"><div class="d-day"><b>Today</b>you choose</div><div class="d-day"><b>Tomorrow</b>new posture + full sequence</div><div class="d-day"><b>Friday</b>final posture + full sequence</div><div class="d-day"><b>Saturday</b>CorePro Strong</div><div class="d-day sun"><b>Sunday</b>full sequence together</div></div>';
+   b.querySelectorAll(".d-day").forEach(function(e,n){hLater(function(){e.classList.add("on")},400+n*1700);});
+ }
+};
+function hDots(){$("hdots").innerHTML=HELLO.map(function(x,k){return '<i class="'+(k<=hi?"on":"")+'"></i>'}).join("");}
+function hShow(k){hClear();hi=k;var L=HELLO[k];$("hsay").textContent=L.t;hDots();DEMO[L.demo]($("demo"));}
+function hSilent(k){                                  // sound off or no voice file: step through on a timer
+  if(k>=HELLO.length){$("hgo").textContent="Pick my postures";return;}
+  hShow(k);hLater(function(){if(hi===k&&!hTalk)hSilent(k+1)},HELLO[k].d*1000);
+}
+var hv=$("hvid");
+function hVideoMode(){return !!HAS.intro;}
+function hLayout(){var v=hVideoMode();hv.style.display=v?"block":"none";$("demo").style.display=v?"none":"flex";$("hdots").style.display=v?"none":"flex";document.querySelector("#hello .hl").style.display=v?"none":"flex";if(v&&!hv.getAttribute("src"))hv.src=vid("intro");}
+hv.addEventListener("ended",function(){$("hgo").textContent="Pick my postures";});
+hv.addEventListener("click",function(){if(hv.paused)hv.play();else hv.pause();});
+function hStart(){
+  if(hVideoMode()){hi=0;hv.currentTime=0;hv.controls=true;hv.play().catch(function(){});$("hgo").textContent="Pick my postures";return;}
+  hTalk=false;$("hgo").textContent="Pick my postures";
+  if(cfg.voice&&SPEED===1){
+    hShow(0);
+    voPlay("intro.mp3",function(){hTalk=false;},function(){hSilent(0)},function(t){
+      hTalk=true;var k=0;for(var n=0;n<HELLO.length;n++)if(t>=HELLO[n].at)k=n;if(k!==hi)hShow(k);});
+  }else hSilent(0);
+}
+function hIdle(){hLayout();try{hv.pause()}catch(e){}hClear();voStop();hTalk=false;hi=-1;$("hsay").textContent="Tap the button and turn your sound on. I'll show you how today works.";DEMO.wave($("demo"));$("hgo").textContent="▶ Tell me how it works";hDots();}
+function hDone(){try{hv.pause()}catch(e){}hClear();voStop();hTalk=false;try{if(!DEMO_REC)localStorage.setItem("bca-day18-seen","1")}catch(e){}show("pick");marks();}
+$("hgo").onclick=function(){actx();if(hi<0){voUnlock();hStart();}else hDone();};
+$("hskip").onclick=hDone;
+$("how").onclick=function(){show("hello");hIdle();};
+var seen=false;try{seen=!!localStorage.getItem("bca-day18-seen")}catch(e){}
+if(seen||DEMO_REC){show("pick");marks();}else{show("hello");hIdle();}
+window.__day18={POSTURES:POSTURES,cfg:cfg,postureSecs:postureSecs,drawArrows:drawArrows,showArrows:showArrows};
+})();
+</script>
+</body>
+</html>
